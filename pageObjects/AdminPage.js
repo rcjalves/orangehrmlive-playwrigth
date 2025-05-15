@@ -1,13 +1,9 @@
 const BasePage = require('./BasePage');
 
-/**
- * Page object for the Admin page
- */
 class AdminPage extends BasePage {
   constructor(page) {
     super(page);
-    
-    // Selectors
+
     this.addButton = 'button:has-text("Add")';
     this.userRoleDropdown = '.oxd-select-wrapper';
     this.userRoleOptions = '.oxd-select-dropdown';
@@ -30,26 +26,17 @@ class AdminPage extends BasePage {
     this.editButton = '.oxd-table-cell-actions .oxd-icon-button:nth-child(2)';
   }
 
-  /**
-   * Navigate to Admin page
-   */
+
   async navigateToAdminPage() {
     await this.navigate('/web/index.php/admin/viewSystemUsers');
     await this.waitForElement(this.addButton);
   }
 
-  /**
-   * Click Add User button
-   */
   async clickAddButton() {
     await this.page.click(this.addButton);
     await this.waitForElement(this.userRoleDropdown);
   }
 
-  /**
-   * Select user role from dropdown
-   * @param {string} role - User role (Admin or ESS)
-   */
   async selectUserRole(role) {
     const dropdowns = await this.page.locator(this.userRoleDropdown).all();
     await dropdowns[0].click();
@@ -57,10 +44,6 @@ class AdminPage extends BasePage {
     await this.page.getByRole('option', { name: role }).click();
   }
 
-  /**
-   * Enter employee name 
-   * @param {string} name - Employee name
-   */
   async enterEmployeeName(name) {
     await this.page.fill(this.employeeNameInput, name);
     await this.page.waitForTimeout(4000); // Wait for autocomplete
@@ -68,10 +51,6 @@ class AdminPage extends BasePage {
     await this.page.keyboard.press('Enter');
   }
 
-  /**
-   * Select status from dropdown
-   * @param {string} status - Status (Enabled or Disabled)
-   */
   async selectStatus(status) {
     const dropdowns = await this.page.locator(this.statusDropdown).all();
     await dropdowns[1].click();
@@ -79,18 +58,10 @@ class AdminPage extends BasePage {
     await this.page.getByRole('option', { name: status }).click();
   }
 
-  /**
-   * Enter username
-   * @param {string} username - Username
-   */
   async enterUsername(username) {
     await this.page.fill(this.usernameInput, username);
   }
 
-  /**
-   * Enter password
-   * @param {string} password - Password
-   */
   async enterPassword(password) {
     await this.page.locator(`xpath=${this.passwordInput}`).fill(password);
   }
@@ -99,27 +70,15 @@ class AdminPage extends BasePage {
     await this.page.locator(`xpath=${this.confirmPasswordInput}`).fill(password);
   }
 
-
-  /**
-   * Save user form
-   */
   async saveUser() {
     await this.page.click(this.saveButton);
   }
 
-  /**
-   * Check if success message is displayed
-   * @returns {Promise<boolean>} True if success message is displayed
-   */
   async isSuccessMessageDisplayed() {
     await this.waitForElement(this.successMessage);
     return await this.isElementVisible(this.successMessage);
   }
 
-  /**
-   * Search for user
-   * @param {string} username - Username to search
-   */
   async searchUser(username) {
     const searchInputs = await this.page.locator(this.userSearchInput).all();
     await searchInputs[1].fill(username);
@@ -127,20 +86,11 @@ class AdminPage extends BasePage {
     await this.page.waitForTimeout(2000); // Wait for search results
   }
 
-  /**
-   * Check if user exists in the table
-   * @param {string} username - Username to check
-   * @returns {Promise<boolean>} True if user exists
-   */
   async isUserExist(username) {
     const userText = await this.page.locator(this.userTable).textContent();
     return userText.includes(username);
   }
 
-  /**
-   * Delete user
-   * @param {string} username - Username to delete
-   */
   async deleteUser(username) {
     await this.searchUser(username);
     const checkboxes = await this.page.locator(this.userCheckbox).all();
@@ -150,10 +100,6 @@ class AdminPage extends BasePage {
     await this.page.click(this.deleteConfirmButton);
   }
 
-  /**
-   * Edit user
-   * @param {string} username - Username to edit
-   */
   async editUser(username) {
     await this.searchUser(username);
     const editButtons = await this.page.locator(this.editButton).all();
