@@ -13,14 +13,11 @@ test.describe('Minha Info', () => {
     loginPage = new LoginPage(page);
     dashboardPage = new DashboardPage(page);
     myInfoPage = new MyInfoPage(page);
-
     await loginPage.navigateToLoginPage();
     const { username, password } = TestHelper.getAdminCredentials();
     await loginPage.login(username, password);
-
     const isLoggedIn = await loginPage.isLoggedIn();
     expect(isLoggedIn).toBeTruthy();
-
     await dashboardPage.navigateToMyInfo();
   });
 
@@ -28,12 +25,14 @@ test.describe('Minha Info', () => {
     const firstName = 'John' + TestHelper.generateRandomString(3);
     const middleName = 'David' + TestHelper.generateRandomString(3);
     const lastName = 'Smith' + TestHelper.generateRandomString(3);
+
     await myInfoPage.updateFirstName(firstName);
     await myInfoPage.updateMiddleName(middleName);
     await myInfoPage.updateLastName(lastName);
     await myInfoPage.selectNationality('American');
     await myInfoPage.selectMaritalStatus('Single');
     await myInfoPage.savePersonalDetails();
+
     const isSuccessMessageDisplayed = await myInfoPage.isSuccessMessageDisplayed();
     expect(isSuccessMessageDisplayed).toBeTruthy();
   });

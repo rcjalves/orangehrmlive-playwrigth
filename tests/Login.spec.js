@@ -1,17 +1,11 @@
+// tests/login.spec.js
 const { test, expect } = require('@playwright/test');
 const LoginPage = require('../pageObjects/LoginPage');
 const DashboardPage = require('../pageObjects/DashboardPage');
-const MyInfoPage = require('../pageObjects/MyInfoPage');
-const AdminPage = require('../pageObjects/AdminPage');
 const TestHelper = require('../utils/testHelper');
 
 const adminCredentials = TestHelper.getAdminCredentials();
-const firstName = 'Joao Tester';
-const lastName = 'Silva';
-const fullName = `${firstName} ${lastName}`;
-const password = 'Test@123456';
 
-// -------- LOGIN TESTS --------
 test.describe('Login', () => {
   let loginPage;
   let dashboardPage;
@@ -22,7 +16,7 @@ test.describe('Login', () => {
     await loginPage.navigateToLoginPage();
   });
 
-  test('Credenciais Inválidas', async () => {
+  test('Credenciais Inválidas', async ({}, testInfo) => {
     const invalidUsername = 'invalid_user';
     const invalidPassword = 'invalid_password';
 
@@ -31,7 +25,7 @@ test.describe('Login', () => {
     expect(errorMessage).toContain('Invalid credentials');
   });
 
-  test('Login com Sucesso', async () => {
+  test('Login com Sucesso', async ({}, testInfo) => {
     await loginPage.login(adminCredentials.username, adminCredentials.password);
     const isLoggedIn = await loginPage.isLoggedIn();
     expect(isLoggedIn).toBeTruthy();

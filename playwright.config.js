@@ -1,10 +1,8 @@
+// playwright.config.js
 // @ts-check
 const { defineConfig, devices } = require('@playwright/test');
 require('dotenv').config();
 
-/**
- * @see https://playwright.dev/docs/test-configuration
- */
 module.exports = defineConfig({
   testDir: './tests',
   timeout: 30000,
@@ -20,16 +18,28 @@ module.exports = defineConfig({
     ['list']
   ],
   use: {
-    baseURL: 'https://opensource-demo.orangehrmlive.com',
+    baseURL: process.env.BASE_URL || 'https://opensource-demo.orangehrmlive.com',
     actionTimeout: 0,
     trace: 'on-first-retry',
-    video: 'on-first-retry',
+    video: 'on',
     screenshot: 'only-on-failure',
   },
   projects: [
     {
-      name: 'chromium',
+      name: 'Chrome',
       use: { ...devices['Desktop Chrome'] },
-    }
+    },
+    {
+      name: 'Firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'iPhone 13',
+      use: { ...devices['iPhone 13'] },
+    },
+    {
+      name: 'Pixel 5 (Android)',
+      use: { ...devices['Pixel 5'] },
+    },
   ],
 });
