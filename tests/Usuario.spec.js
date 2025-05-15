@@ -1,0 +1,60 @@
+const { test, expect } = require('@playwright/test');
+const LoginPage = require('../pageObjects/LoginPage');
+const DashboardPage = require('../pageObjects/DashboardPage');
+const AdminPage = require('../pageObjects/AdminPage');
+const TestHelper = require('../utils/testHelper');
+
+test.describe('User Management', () => {
+  let loginPage;
+  let dashboardPage;
+  let adminPage;
+  let testUsername;
+
+  test.beforeEach(async ({ page }) => {
+    loginPage = new LoginPage(page);
+    dashboardPage = new DashboardPage(page);
+    adminPage = new AdminPage(page);
+
+    testUsername = TestHelper.generateRandomUsername();
+    await loginPage.navigateToLoginPage();
+    const { username, password } = TestHelper.getAdminCredentials();
+    await loginPage.login(username, password);
+
+    const isLoggedIn = await loginPage.isLoggedIn();
+    expect(isLoggedIn).toBeTruthy();
+
+    const firstName = 'Joao Tester';
+    const lastName = 'Silva';
+    const fullName = `${firstName} ${lastName}`;
+    const randomId = Math.floor(1000 + Math.random() * 9000).toString();
+
+    await page.click('a[href="/web/index.php/pim/viewPimModule"]');
+    await page.waitForSelector('button:has-text("Add")');
+    await page.click('button:has-text("Add")');
+
+    await page.fill('input[name="firstName"]', firstName);
+    await page.fill('input[name="lastName"]', lastName);
+
+    const employeeIdInput = page.locator('input.oxd-input.oxd-input--active').nth(2);
+    await employeeIdInput.fill('');
+    await employeeIdInput.type(randomId);
+
+    await page.click('button[type="submit"]');
+    await page.waitForTimeout(7000);
+    await page.waitForSelector('h6:has-text("Personal Details")');
+    await dashboardPage.navigateToAdmin();
+  });
+
+
+  test('Adicionar novo usuario', async ({ page }) => {
+    await adminPage.clickAddButton();
+    await adminPage.selectUserRole('Admin');
+    await adminPage.enterEmployeeName('Joao Tester'); // <-- nome do funcionário criado
+    await adminPage.selectStatus('Enabled');
+    await adminPage.enterUsername(testUsername);
+    await adminPage.enterPassword('Test@123456');
+    await page.waitForTimeout(2000);
+    await adminPage.enterConfirmPassword('Test@123456');
+    await adminPage.saveUser();
+  });
+});
