@@ -18,10 +18,12 @@ test.describe('Minha Info', () => {
     await loginPage.login(username, password);
     const isLoggedIn = await loginPage.isLoggedIn();
     expect(isLoggedIn).toBeTruthy();
+
+    await dashboardPage.ensureMenuIsOpen();
     await dashboardPage.navigateToMyInfo();
   });
 
-  test('Atualizar minhas informações', async () => {
+  test('Atualizar minhas informações', async ({ page }) => {
     const firstName = 'John' + TestHelper.generateRandomString(3);
     const middleName = 'David' + TestHelper.generateRandomString(3);
     const lastName = 'Smith' + TestHelper.generateRandomString(3);

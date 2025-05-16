@@ -26,7 +26,6 @@ class AdminPage extends BasePage {
     this.editButton = '.oxd-table-cell-actions .oxd-icon-button:nth-child(2)';
   }
 
-
   async navigateToAdminPage() {
     await this.navigate('/web/index.php/admin/viewSystemUsers');
     await this.waitForElement(this.addButton);
@@ -46,7 +45,7 @@ class AdminPage extends BasePage {
 
   async enterEmployeeName(name) {
     await this.page.fill(this.employeeNameInput, name);
-    await this.page.waitForTimeout(4000); // Wait for autocomplete
+    await this.page.waitForTimeout(4000);
     await this.page.keyboard.press('ArrowDown');
     await this.page.keyboard.press('Enter');
   }
@@ -83,7 +82,7 @@ class AdminPage extends BasePage {
     const searchInputs = await this.page.locator(this.userSearchInput).all();
     await searchInputs[1].fill(username);
     await this.page.click(this.searchButton);
-    await this.page.waitForTimeout(2000); // Wait for search results
+    await this.page.waitForTimeout(2000);
   }
 
   async isUserExist(username) {

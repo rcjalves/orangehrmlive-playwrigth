@@ -1,4 +1,3 @@
-// tests/login.spec.js
 const { test, expect } = require('@playwright/test');
 const LoginPage = require('../pageObjects/LoginPage');
 const DashboardPage = require('../pageObjects/DashboardPage');

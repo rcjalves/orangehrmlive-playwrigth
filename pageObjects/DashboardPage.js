@@ -12,7 +12,10 @@ class DashboardPage extends BasePage {
     this.sideMenuItems = '.oxd-main-menu-item';
     this.adminMenuItem = 'a[href*="admin/viewAdminModule"]';
     this.myInfoMenuItem = 'a[href*="pim/viewMyDetails"]';
-    this.menuToggleButton = '.oxd-icon-button'; // Menu hambúrguer
+    this.pimMenuItem = 'a[href*="pim/viewPimModule"]';
+    this.menuToggleButton = 'button.oxd-icon-button[aria-label="Menu"]'; // Seletor mais específico
+    this.menuWrapper = '.oxd-sidepanel';
+    this.menuOverlay = '.oxd-sidepanel-overlay'; // Elemento de overlay do menu
   }
 
   async isDashboardLoaded() {
@@ -28,68 +31,94 @@ class DashboardPage extends BasePage {
     await logoutLinks[3].click();
   }
 
-  async openSideMenuIfHidden(targetMenuSelector) {
-    const targetLocator = this.page.locator(targetMenuSelector);
-    const isVisible = await targetLocator.isVisible();
+  async clickMenuButton() {
+    const menuToggle = this.page.locator(this.menuToggleButton).first();
 
-    if (!isVisible) {
-      const menuToggle = this.page.locator(this.menuToggleButton).first();
-      if (await menuToggle.isVisible()) {
-        await menuToggle.click();
-        await this.page.waitForSelector(targetMenuSelector, { state: 'visible', timeout: 5000 });
-      }
+    try {
+      await menuToggle.waitFor({ state: 'visible', timeout: 10000 });
+      await menuToggle.scrollIntoViewIfNeeded();
+
+      await menuToggle.click({ timeout: 5000 });
+    } catch (error) {
+      console.log('Clique normal falhou, tentando fallbacks...');
+
+      await menuToggle.evaluate(el => el.click());
+
+      const box = await menuToggle.boundingBox();
+      await this.page.mouse.click(box.x + box.width/2, box.y + box.height/2);
+
+      await menuToggle.click({ force: true, timeout: 5000 });
+    }
+
+    await this.page.waitForTimeout(300);
+  }
+
+  async ensureMenuIsOpen() {
+    const menuToggle = this.page.locator(this.menuToggleButton).first();
+
+    if (!await menuToggle.isVisible()) {
+      return; // Menu já deve estar visível em desktop
+    }
+
+    const menuState = await this.page.locator(this.menuWrapper).evaluate(el => {
+      return {
+        left: window.getComputedStyle(el).left,
+        opacity: window.getComputedStyle(el).opacity,
+        visibility: window.getComputedStyle(el).visibility
+      };
+    });
+
+    const isMenuOpen = menuState.left === '0px' ||
+                      (menuState.opacity === '1' && menuState.visibility === 'visible');
+
+    if (!isMenuOpen) {
+      await this.clickMenuButton();
+
+      await Promise.race([
+        this.page.waitForSelector(this.menuWrapper + ':not([aria-hidden])'),
+        this.page.waitForFunction(() => {
+          const menu = document.querySelector('.oxd-sidepanel');
+          return window.getComputedStyle(menu).left === '0px';
+        }),
+        this.page.waitForSelector(this.menuOverlay)
+      ]).catch(() => {
+        throw new Error('Menu não abriu após clique no botão');
+      });
     }
   }
 
-  async safeClick(selector) {
-    const locator = this.page.locator(selector);
-    try {
-      await locator.scrollIntoViewIfNeeded();
-      await locator.click();
-    } catch (e) {
-      // fallback com force: true
-      await locator.click({ force: true });
-    }
+  async navigateToMenuItem(menuItemSelector) {
+    await this.ensureMenuIsOpen();
+
+    const menuItem = this.page.locator(menuItemSelector);
+    await menuItem.waitFor({ state: 'visible' });
+
+    await menuItem.scrollIntoViewIfNeeded();
+    await menuItem.click({ timeout: 10000 }).catch(async () => {
+      await menuItem.evaluate(el => el.click());
+    });
   }
 
   async navigateToAdmin() {
-    await this.openSideMenuIfHidden(this.adminMenuItem);
-    await this.safeClick(this.adminMenuItem);
-    await this.page.waitForURL('**/admin/viewSystemUsers');
+    await this.navigateToMenuItem(this.adminMenuItem);
+    await this.page.waitForURL('**/admin/viewSystemUsers', { timeout: 15000 });
   }
 
-    async navigateToMyInfo() {
-      // Verifica se botão do menu lateral (hambúrguer) está visível (mobile)
-      const hamburgerVisible = await this.page.locator(this.menuToggleButton).isVisible();
-      if (hamburgerVisible) {
-        await this.page.click(this.menuToggleButton);
-      }
+  async navigateToMyInfo() {
+    await this.navigateToMenuItem(this.myInfoMenuItem);
+    await this.page.waitForURL('**/pim/viewPersonalDetails/empNumber/**', { timeout: 15000 });
+  }
 
-      const locator = this.page.locator(this.myInfoMenuItem);
-      try {
-        // Espera o item do menu aparecer visivelmente
-        await locator.waitFor({ state: 'visible', timeout: 5000 });
-        await locator.click();
-      } catch (e) {
-        // Se falhar, tenta forçar o clique (útil em mobile)
-        console.warn('Clique padrão falhou, tentando com force: true');
-        await locator.click({ force: true });
-      }
-
-      await this.page.waitForURL('**/pim/viewPersonalDetails/empNumber/**');
+  async navigateToPIM() {
+    try {
+      await this.navigateToMenuItem(this.pimMenuItem);
+      await this.page.waitForURL('**/pim/viewEmployeeList', { timeout: 15000 });
+      return true;
+    } catch (error) {
+      console.error('Falha ao navegar para PIM:', error);
+      return false;
     }
-    async navigateToPIM() {
-      const locator = this.page.locator('a[href*="pim/viewPimModule"]');
-      const hamburgerVisible = await this.page.locator(this.menuToggleButton).isVisible();
-      if (hamburgerVisible) {
-        await this.page.click(this.menuToggleButton);
-      }
-      await locator.waitFor({ state: 'visible' });
-      await locator.click();
-      await this.page.waitForURL('**/pim/viewPimModule');
-    }
-
-
+  }
 }
 
 module.exports = DashboardPage;

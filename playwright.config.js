@@ -1,5 +1,3 @@
-// playwright.config.js
-// @ts-check
 const { defineConfig, devices } = require('@playwright/test');
 require('dotenv').config();
 
