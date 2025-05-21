@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <body>
 
-  <h1>🍊 OrangeHRM - Test Automation Framework</h1>
+  <h1>🍊 Projeto OrangeHRM - Testes Automatizados</h1>
   <p>Este repositório contém a automação de testes para o site OrangeHRM utilizando <strong>Playwright</strong> e o padrão <strong>Page Object Model (POM)</strong>. O framework foi desenvolvido para oferecer testes robustos e de fácil manutenção.</p>
 
   <h2>🚀 Recursos Principais</h2>
